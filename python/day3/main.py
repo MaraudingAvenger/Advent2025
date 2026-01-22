@@ -16,8 +16,8 @@ def make_number_from_digits(digits: list[int], n_digits: int) -> int:
         digits_remaining -= 1
     return max_number
 
-def main() -> None:
-    with open('input.txt', 'r') as file:
+def main(fn: str = "input.txt") -> None:
+    with open(fn, 'r') as file:
         voltage = 0
         for line in file.readlines():
             # make the largest number possible by combining two digits
@@ -26,7 +26,7 @@ def main() -> None:
             voltage += max_number
         print("Part 1:", voltage)
 
-    with open('input.txt', 'r') as file:
+    with open(fn, 'r') as file:
         voltage = 0
         for line in file.readlines():
             # make the largest 12 digit number possible by combining digits
@@ -35,3 +35,6 @@ def main() -> None:
             max_number = make_number_from_digits(digits, 12)
             voltage += max_number
         print("Part 2:", voltage)
+
+if __name__ == "__main__":
+    main()
