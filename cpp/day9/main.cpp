@@ -1,28 +1,285 @@
 #include <iostream>
 #include <vector>
 #include <set>
-#include <queue>
+#include <map>
+#include <algorithm>
 #include "utils.h"
 
-size_t rectArea(std::pair<long, long> topLeft, std::pair<long, long> bottomRight) {
+
+using Point = std::pair<long, long>;
+
+// Computes inclusive axis-aligned rectangle area from two opposite corners.
+// +1 is used because puzzle coordinates represent tile positions (inclusive bounds).
+size_t rectArea(Point topLeft, Point bottomRight) {
     size_t width = std::abs(bottomRight.first - topLeft.first) + 1;
     size_t height = std::abs(bottomRight.second - topLeft.second) + 1;
     return width * height;
 }
 
-std::vector<std::pair<long, long>> pointsBetween(const std::pair<long,long>& p1,
-                                                 const std::pair<long,long>& p2) {
-    std::vector<std::pair<long, long>> points;
-    for (long x = std::min(p1.first, p2.first); x <= std::max(p1.first, p2.first); ++x) {
-        for (long y = std::min(p1.second, p2.second); y <= std::max(p1.second, p2.second); ++y) {
-            points.emplace_back(x, y);
+struct CompressedPolygon {
+    // Sorted unique x/y coordinates from vertex list (coordinate compression axes).
+    std::vector<long> xs;
+    std::vector<long> ys;
+    // insideCells[row][col] = 1 when compressed cell is strictly inside polygon.
+    std::vector<std::vector<uint8_t>> insideCells;   // [row y-interval][col x-interval]
+    // hasVertex[y][x] = 1 when original vertex exists at compressed grid intersection.
+    std::vector<std::vector<uint8_t>> hasVertex;     // [y-index][x-index]
+};
+
+// Builds compressed polygon representation used by Part 2.
+// Strategy:
+// 1) Coordinate-compress x/y from vertices.
+// 2) Mark which compressed intersections are original vertices.
+// 3) Fill compressed cells using scanline parity (even/odd intersections).
+CompressedPolygon preparePolygonData(const std::vector<Point>& coordinates) {
+    CompressedPolygon data;
+
+    // Collect all x/y values from vertices.
+    for (const auto& [x, y] : coordinates) {
+        data.xs.push_back(x);
+        data.ys.push_back(y);
+    }
+
+    // Deduplicate + sort for coordinate compression.
+    std::sort(data.xs.begin(), data.xs.end());
+    data.xs.erase(std::unique(data.xs.begin(), data.xs.end()), data.xs.end());
+    std::sort(data.ys.begin(), data.ys.end());
+    data.ys.erase(std::unique(data.ys.begin(), data.ys.end()), data.ys.end());
+
+    // Maps from world coordinate -> compressed index.
+    std::map<long, int> xIndex;
+    std::map<long, int> yIndex;
+    for (int i = 0; i < static_cast<int>(data.xs.size()); ++i) {
+        xIndex[data.xs[i]] = i;
+    }
+    for (int i = 0; i < static_cast<int>(data.ys.size()); ++i) {
+        yIndex[data.ys[i]] = i;
+    }
+
+    // Mark every original vertex on the compressed lattice.
+    data.hasVertex.assign(data.ys.size(), std::vector<uint8_t>(data.xs.size(), 0));
+    for (const auto& [x, y] : coordinates) {
+        data.hasVertex[yIndex[y]][xIndex[x]] = 1;
+    }
+
+    // Need at least one compressed cell in both dimensions.
+    if (data.xs.size() < 2 || data.ys.size() < 2) {
+        return data;
+    }
+
+    const int rows = static_cast<int>(data.ys.size()) - 1;
+    const int cols = static_cast<int>(data.xs.size()) - 1;
+    data.insideCells.assign(rows, std::vector<uint8_t>(cols, 0));
+
+    // For each compressed y-band, cast a horizontal scanline through its midpoint.
+    // Intersections with vertical polygon edges define inside intervals (parity fill).
+    for (int row = 0; row < rows; ++row) {
+        long double yMid = (static_cast<long double>(data.ys[row]) + static_cast<long double>(data.ys[row + 1])) * 0.5L;
+
+        std::vector<long> intersections;
+        intersections.reserve(coordinates.size());
+
+        // Build x-intersections against vertical edges only.
+        for (size_t i = 0; i < coordinates.size(); ++i) {
+            const auto& p1 = coordinates[i];
+            const auto& p2 = coordinates[(i + 1) % coordinates.size()];
+
+            if (p1.first == p2.first) {
+                long yMin = std::min(p1.second, p2.second);
+                long yMax = std::max(p1.second, p2.second);
+                // Half-open y-range avoids double counting at shared vertices.
+                if (yMid >= static_cast<long double>(yMin) && yMid < static_cast<long double>(yMax)) {
+                    intersections.push_back(p1.first);
+                }
+            }
+        }
+
+        std::sort(intersections.begin(), intersections.end());
+        if (intersections.size() < 2) {
+            continue;
+        }
+
+        // Step through compressed x-cells and mark midpoint-inside intervals.
+        size_t interval = 0;
+        for (int col = 0; col < cols; ++col) {
+            long double xMid = (static_cast<long double>(data.xs[col]) + static_cast<long double>(data.xs[col + 1])) * 0.5L;
+
+            while (interval + 1 < intersections.size() && xMid >= static_cast<long double>(intersections[interval + 1])) {
+                interval += 2;
+            }
+
+            if (interval + 1 < intersections.size()) {
+                long left = intersections[interval];
+                long right = intersections[interval + 1];
+                if (xMid > static_cast<long double>(left) && xMid < static_cast<long double>(right)) {
+                    data.insideCells[row][col] = 1;
+                }
+            }
         }
     }
-    return points;
+
+    return data;
+}
+
+// 2D prefix-sum for O(1) rectangular area queries over insideCells.
+std::vector<std::vector<int>> buildPrefix(const std::vector<std::vector<uint8_t>>& grid) {
+    if (grid.empty() || grid[0].empty()) {
+        return {{0}};
+    }
+
+    int rows = static_cast<int>(grid.size());
+    int cols = static_cast<int>(grid[0].size());
+    std::vector<std::vector<int>> prefix(rows + 1, std::vector<int>(cols + 1, 0));
+
+    for (int r = 0; r < rows; ++r) {
+        for (int c = 0; c < cols; ++c) {
+            prefix[r + 1][c + 1] = grid[r][c]
+                + prefix[r][c + 1]
+                + prefix[r + 1][c]
+                - prefix[r][c];
+        }
+    }
+
+    return prefix;
+}
+
+// Returns sum over inclusive rectangle [r1..r2] x [c1..c2] in insideCells.
+int sumRect(const std::vector<std::vector<int>>& prefix, int r1, int c1, int r2, int c2) {
+    if (r1 > r2 || c1 > c2) {
+        return 0;
+    }
+    return prefix[r2 + 1][c2 + 1]
+         - prefix[r1][c2 + 1]
+         - prefix[r2 + 1][c1]
+         + prefix[r1][c1];
+}
+
+// Part 2 solver.
+// Finds largest axis-aligned rectangle that:
+// - is fully inside the filled orthogonal polygon, and
+// - has opposite corners that are original polygon vertices.
+//
+// Efficiency notes:
+// - Uses compressed coordinates, so work scales with unique x/y counts.
+// - For each (bottomY, topY) pair, tests valid interior x-runs using prefix sums.
+// - Per run, picks widest diagonal based on available vertices at top/bottom rows.
+size_t solvePart2(const std::vector<Point>& coordinates) {
+    // Quick reject for impossible rectangles.
+    if (coordinates.size() < 4) {
+        return 0;
+    }
+
+    CompressedPolygon data = preparePolygonData(coordinates);
+    if (data.xs.size() < 2 || data.ys.size() < 2 || data.insideCells.empty() || data.insideCells[0].empty()) {
+        return 0;
+    }
+
+    const int yCount = static_cast<int>(data.ys.size());
+    const int xCount = static_cast<int>(data.xs.size());
+    const int cols = xCount - 1;
+
+    // Prefix grid enables constant-time check that a column strip is fully inside.
+    std::vector<std::vector<int>> prefix = buildPrefix(data.insideCells);
+    size_t maxArea = 0;
+
+    // Enumerate candidate rectangle heights by choosing bottom/top compressed y indices.
+    for (int yBottom = 0; yBottom < yCount; ++yBottom) {
+        for (int yTop = yBottom + 1; yTop < yCount; ++yTop) {
+            size_t height = static_cast<size_t>(std::abs(data.ys[yTop] - data.ys[yBottom])) + 1;
+
+            // Upper-bound pruning for current height.
+            size_t maxPossibleWithHeight = height * (static_cast<size_t>(std::abs(data.xs.back() - data.xs.front())) + 1);
+            if (maxPossibleWithHeight <= maxArea) {
+                continue;
+            }
+
+            const std::vector<uint8_t>& bottomVertices = data.hasVertex[yBottom];
+            const std::vector<uint8_t>& topVertices = data.hasVertex[yTop];
+
+            // Mark compressed x-columns whose full vertical strip is inside polygon.
+            std::vector<uint8_t> goodCellCol(cols, 0);
+            for (int col = 0; col < cols; ++col) {
+                int insideCount = sumRect(prefix, yBottom, col, yTop - 1, col);
+                goodCellCol[col] = (insideCount == (yTop - yBottom));
+            }
+
+            // Maximal contiguous runs of good columns are candidate rectangle x-ranges.
+            int col = 0;
+            while (col < cols) {
+                while (col < cols && !goodCellCol[col]) {
+                    ++col;
+                }
+                if (col >= cols) {
+                    break;
+                }
+
+                int startCol = col;
+                while (col < cols && goodCellCol[col]) {
+                    ++col;
+                }
+                int endCol = col - 1;
+
+                if (startCol <= endCol) {
+                    const int leftX = startCol;
+                    const int rightX = endCol + 1;
+
+                    // Find outermost vertices on both candidate y edges in this run.
+                    int firstBottom = -1;
+                    int lastBottom = -1;
+                    int firstTop = -1;
+                    int lastTop = -1;
+
+                    for (int x = leftX; x <= rightX; ++x) {
+                        if (bottomVertices[x]) {
+                            if (firstBottom == -1) {
+                                firstBottom = x;
+                            }
+                            lastBottom = x;
+                        }
+                        if (topVertices[x]) {
+                            if (firstTop == -1) {
+                                firstTop = x;
+                            }
+                            lastTop = x;
+                        }
+                    }
+
+                    size_t bestRunWidth = 0;
+
+                    // Diagonal option A: bottom-left with top-right.
+                    if (firstBottom != -1 && lastTop != -1 && firstBottom < lastTop) {
+                        size_t w = static_cast<size_t>(std::abs(data.xs[lastTop] - data.xs[firstBottom])) + 1;
+                        if (w > bestRunWidth) {
+                            bestRunWidth = w;
+                        }
+                    }
+
+                    // Diagonal option B: top-left with bottom-right.
+                    if (firstTop != -1 && lastBottom != -1 && firstTop < lastBottom) {
+                        size_t w = static_cast<size_t>(std::abs(data.xs[lastBottom] - data.xs[firstTop])) + 1;
+                        if (w > bestRunWidth) {
+                            bestRunWidth = w;
+                        }
+                    }
+
+                    // Update global best area.
+                    if (bestRunWidth > 0) {
+                        size_t area = bestRunWidth * height;
+                        if (area > maxArea) {
+                            maxArea = area;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return maxArea;
 }
 
 int main() {
-    std::vector<std::pair<long, long>> coordinates;
+    // Input format: "x,y" per line.
+    std::vector<Point> coordinates;
     std::ifstream file("input.txt");
     long x, y;
     char comma;
@@ -31,7 +288,7 @@ int main() {
     }
     file.close();
 
-    // find the largest rectangle possible from the coordinates
+    // Part 1: original logic - max inclusive rectangle area from any two points.
     size_t maxArea = 0;
     for (size_t i = 0; i < coordinates.size(); ++i) {
         for (size_t j = 0; j < coordinates.size(); ++j) {
@@ -43,109 +300,11 @@ int main() {
         }
     }
     std::cout << "Part 1: " << maxArea << std::endl;
-    
-    // Part 2: find largest rectangle with corners on polygon edges, containing only red/green tiles
-    
-    // Find bounding box
-    long minX = coordinates[0].first, maxX = coordinates[0].first;
-    long minY = coordinates[0].second, maxY = coordinates[0].second;
-    for (const auto& c : coordinates) {
-        minX = std::min(minX, c.first);
-        maxX = std::max(maxX, c.first);
-        minY = std::min(minY, c.second);
-        maxY = std::max(maxY, c.second);
-    }
-    
-    // Draw polygon edges (red tiles)
-    std::set<std::pair<long, long>> redTiles;
-    for (size_t i = 0; i < coordinates.size(); ++i) {
-        auto p1 = coordinates[i];
-        auto p2 = coordinates[(i + 1) % coordinates.size()];
-        
-        // Since tiles on same row or column, just draw straight line
-        long minX = std::min(p1.first, p2.first);
-        long maxX = std::max(p1.first, p2.first);
-        long minY = std::min(p1.second, p2.second);
-        long maxY = std::max(p1.second, p2.second);
-        
-        for (long x = minX; x <= maxX; ++x) {
-            for (long y = minY; y <= maxY; ++y) {
-                redTiles.insert({x, y});
-            }
-        }
-    }
-    
-    // Flood fill from outside to mark white tiles
-    std::set<std::pair<long, long>> whiteTiles;
-    std::queue<std::pair<long, long>> q;
-    q.push({minX - 1, minY - 1});
-    
-    while (!q.empty()) {
-        auto [x, y] = q.front();
-        q.pop();
-        
-        if (whiteTiles.count({x, y})) continue;
-        if (redTiles.count({x, y})) continue;
-        if (x < minX - 1 || x > maxX + 1 || y < minY - 1 || y > maxY + 1) continue;
-        
-        whiteTiles.insert({x, y});
-        
-        q.push({x + 1, y});
-        q.push({x - 1, y});
-        q.push({x, y + 1});
-        q.push({x, y - 1});
-    }
-    
-    // Mark remaining as green
-    std::set<std::pair<long, long>> greenTiles;
-    for (long x = minX; x <= maxX; ++x) {
-        for (long y = minY; y <= maxY; ++y) {
-            if (!redTiles.count({x, y}) && !whiteTiles.count({x, y})) {
-                greenTiles.insert({x, y});
-            }
-        }
-    }
-    
-    // Check if rectangle contains only red/green tiles
-    auto isValidRect = [&](long x1, long y1, long x2, long y2) -> bool {
-        long minRectX = std::min(x1, x2);
-        long maxRectX = std::max(x1, x2);
-        long minRectY = std::min(y1, y2);
-        long maxRectY = std::max(y1, y2);
-        
-        for (long x = minRectX; x <= maxRectX; ++x) {
-            for (long y = minRectY; y <= maxRectY; ++y) {
-                if (whiteTiles.count({x, y})) return false;
-            }
-        }
-        return true;
-    };
-    
-    // Find largest rectangle with opposite corners on red tiles
-    maxArea = 0;
-    std::vector<std::pair<long, long>> redVec(redTiles.begin(), redTiles.end());
-    
-    for (size_t i = 0; i < redVec.size(); ++i) {
-        for (size_t j = 0; j < redVec.size(); ++j) {
-            if (i == j) continue;
-            
-            auto [x1, y1] = redVec[i];
-            auto [x2, y2] = redVec[j];
-            
-            // Only axis-aligned rectangles with different x and y
-            if (x1 != x2 && y1 != y2) {
-                size_t width = std::abs(x2 - x1) + 1;
-                size_t height = std::abs(y2 - y1) + 1;
-                size_t area = width * height;
-                if (area > maxArea) {
-                    if (isValidRect(x1, y1, x2, y2)) {
-                        maxArea = std::max(maxArea, area);
-                    }
-                }
-            }
-        }
-    }
-    
+
+    // Part 2: fill polygon induced by vertex order (including closing edge), then
+    // find largest inside rectangle whose opposite corners are original vertices.
+    maxArea = solvePart2(coordinates);
+
     std::cout << "Part 2: " << maxArea << std::endl;
     
     return 0;
