@@ -24,7 +24,11 @@ CMakeCache.txt
 
 # Python
 *.py[cdo]
+__pycache__/
 
+# Go
+/bin/
+/pkg/
 
 # IDEs
 .vscode/
