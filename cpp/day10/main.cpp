@@ -98,7 +98,12 @@ int main() {
         q2.push({initialJolts, 0});
         visitedJolts.insert(initialJolts);
         int minJoltSteps = -1;
-        
+        std::cout << "{ ";
+        for (ushort j : joltTarget) {
+            std::cout << j << ' ';
+        }
+        std::cout << "} -> ";
+
         while (!q2.empty()) {
             auto [currentJolts, steps] = q2.front();
             q2.pop();
@@ -129,9 +134,10 @@ int main() {
                 }
             }
         }
-        
+        std::cout << minJoltSteps << '\n';
         joltageTotal += minJoltSteps;
     }
+    std::cout << std::endl;
     std::cout << "Part 1: " << stepTotal << std::endl;
     std::cout << "Part 2: " << joltageTotal << std::endl;
 }
