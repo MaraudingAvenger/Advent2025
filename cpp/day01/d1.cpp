@@ -5,7 +5,7 @@
 
 int main() {
 
-    std::vector<std::string> lines = utils::readLinesFromFile("input.txt");
+    std::vector<std::string> lines = utils::readLinesFromFile("~/dev/advent/2025/inputs/day1.txt");
     const int size = 100;
     int count = 0;
     int currentPosition = 50;
