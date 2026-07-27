@@ -3,7 +3,7 @@
 inputs/
 
 # Rust
-/target/
+target/
 Cargo.lock
 **/*.rs.bk
 *.pdb
