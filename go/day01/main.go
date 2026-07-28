@@ -5,10 +5,12 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	utils "github.com/MaraudingAvenger/Advent2025/common"
 )
 
 func main() {
-	input, err := os.ReadFile("/home/luke/dev/advent/2025/inputs/day1.txt")
+	input, err := os.ReadFile(utils.FindInputFile("inputs/day1.txt"))
 	if err != nil {
 		panic(err)
 	}

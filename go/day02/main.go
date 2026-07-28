@@ -6,6 +6,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	utils "github.com/MaraudingAvenger/Advent2025/common"
 )
 
 func FindRepeatedPatterns(n uint64) bool {
@@ -33,7 +35,7 @@ func FindRepeatedPatterns(n uint64) bool {
 }
 
 func main() {
-	input, err := os.ReadFile("/home/luke/dev/advent/2025/inputs/day2.txt")
+	input, err := os.ReadFile(utils.FindInputFile("inputs/day2.txt"))
 	if err != nil {
 		panic(err)
 	}

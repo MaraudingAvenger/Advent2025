@@ -1,7 +1,8 @@
 use common::read_lines;
+use common::find_input_file;
 
 fn main() {
-    let lines = read_lines("C:\\Users\\marau\\dev\\advent\\Advent2025\\inputs\\day1.txt");
+    let lines = read_lines(&find_input_file("inputs/day1.txt"));
     let mut dial = 50;
     let mut zero_count = 0;
     const DIAL_SIZE: i32 = 100;

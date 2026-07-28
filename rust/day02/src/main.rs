@@ -1,4 +1,5 @@
 use common::read_lines;
+use common::find_input_file;
 
 fn is_repeated_pattern(n: u64) -> bool {
     let n_digits = (n as f64).log10() as u64 + 1;
@@ -29,7 +30,7 @@ fn is_repeated_pattern(n: u64) -> bool {
 }
 
 fn main() {
-    let dirty_lines = read_lines("C:\\Users\\marau\\dev\\advent\\Advent2025\\inputs\\day2.txt");
+    let dirty_lines = read_lines(&find_input_file("inputs/day2.txt"));
     let mut invalid_value: u64 = 0;
     
     for dirty_line in &dirty_lines {
