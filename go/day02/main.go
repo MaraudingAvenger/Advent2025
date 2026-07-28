@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"math"
-	"os"
 	"strconv"
 	"strings"
 
@@ -35,12 +34,10 @@ func FindRepeatedPatterns(n uint64) bool {
 }
 
 func main() {
-	input, err := os.ReadFile(utils.FindInputFile("inputs/day2.txt"))
+	lines, err := utils.ReadInputFile("inputs/day2.txt")
 	if err != nil {
 		panic(err)
 	}
-
-	lines := strings.TrimSpace(string(input))
 
 	var invalid uint64 = 0
 

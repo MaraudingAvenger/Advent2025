@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 
@@ -10,12 +9,10 @@ import (
 )
 
 func main() {
-	input, err := os.ReadFile(utils.FindInputFile("inputs/day1.txt"))
+	lines, err := utils.ReadInputFile("inputs/day1.txt")
 	if err != nil {
 		panic(err)
 	}
-
-	lines := strings.TrimSpace(string(input))
 
 	// the dial starts at 50, and goes from 0 to 99. We want to count how many times it passes 0.
 	dial := 50

@@ -3,6 +3,7 @@ package utils
 import (
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func FindInputFile(path string) string {
@@ -32,4 +33,12 @@ func FindInputFile(path string) string {
 
 		currentDir = parent
 	}
+}
+
+func ReadInputFile(path string) (string, error) {
+	input, err := os.ReadFile(FindInputFile(path))
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(input)), nil
 }
