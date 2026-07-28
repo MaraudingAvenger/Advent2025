@@ -1,4 +1,4 @@
-package day1
+package main
 
 import (
 	"fmt"
@@ -7,47 +7,74 @@ import (
 	"strings"
 )
 
-func Main() {
+func main() {
 	input, err := os.ReadFile("/home/luke/dev/advent/2025/inputs/day1.txt")
 	if err != nil {
 		panic(err)
 	}
 
-	// the dial starts at 50, and goes from 0 to 99. We want to count how many times it passes 0.
-	dial := uint32(50)
-	passes := uint32(0)
+	lines := strings.TrimSpace(string(input))
 
-	for _, line := range strings.Fields(string(input)) {
-		// each line is something like "R15", "L5", etc.
-		// get the direction
-		if len(line) < 2 {
-			continue
-		}
+	// the dial starts at 50, and goes from 0 to 99. We want to count how many times it passes 0.
+	dial := 50
+	passes := 0
+
+	const SIZE = 100
+
+	for _, line := range strings.Fields(lines) {
 
 		direction := line[0]
-		n, err := strconv.ParseUint(line[1:], 10, 32)
+		n, err := strconv.Atoi(line[1:])
 		if err != nil {
 			panic(err)
 		}
-		distance := uint32(n)
+		distance := n
 
 		// calculate the number of times the dial passes 0
 		switch direction {
 		case 'R':
-			dial += distance
-			if dial >= 100 {
-				passes += dial / 100
-				dial = dial % 100
+			dial = (dial + distance) % SIZE
+		case 'L':
+			dial = (dial + SIZE - (distance % SIZE)) % SIZE
+		default:
+			panic(fmt.Sprintf("invalid direction: %q", direction))
+		}
+
+		if dial == 0 {
+			passes++
+		}
+	}
+
+	fmt.Printf("Part 1: %d\n", passes)
+
+	dial = 50
+	passes = 0
+	for _, line := range strings.Fields(lines) {
+		direction := line[0]
+		n, err := strconv.Atoi(line[1:])
+		if err != nil {
+			panic(err)
+		}
+		distance := n
+
+		switch direction {
+		case 'R':
+			for i := 0; i < distance; i++ {
+				dial = (dial + 1) % SIZE
+				if dial == 0 {
+					passes++
+				}
 			}
 		case 'L':
-			if distance > dial {
-				passes += (distance - dial + 99) / 100
+			for i := 0; i < distance; i++ {
+				dial = (dial + SIZE - 1) % SIZE
+				if dial == 0 {
+					passes++
+				}
 			}
-			dial = (dial + 100 - (distance % 100)) % 100
 		default:
 			panic(fmt.Sprintf("invalid direction: %q", direction))
 		}
 	}
-
-	fmt.Printf("The dial passed 0 %d times\n", passes)
+	fmt.Printf("Part 2: %d\n", passes)
 }
