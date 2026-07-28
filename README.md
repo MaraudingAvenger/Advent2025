@@ -12,6 +12,29 @@ Everything is built using the build command in the `build.sh` files in each day'
 
 This is just so I don't lose everything I've learned in Rust. I'm not great at the language and just trying to develop/not lose all my rust knowledge.
 
-## Other languages
+Run it with:
 
-I'll probably revert to Python at some point, and I may even try to do this stuff in Go if I'm feeling motivated enough. We shall see...
+```bash
+cargo run -p day01
+```
+
+To create a new day folder, run:
+
+```bash
+cargo new day03 --vcs none
+```
+
+## Go
+
+I'm also keeping a Go version around so I can practice it without letting it completely atrophy.
+
+Run it with:
+
+```bash
+go run ./day01
+```
+
+## Python
+
+Python is the fallback when I want to move quickly or keep the solution simple.
+
