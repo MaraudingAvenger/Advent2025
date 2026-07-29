@@ -2,7 +2,7 @@
 #include <iostream>
 #include <print>
 #include <vector>
-#include "utils.h"
+#include "../common/utils.h"
 
 class Point3D {
 public:
@@ -62,7 +62,7 @@ void print2d(const std::vector<std::vector<double>>& matrix) {
 
 int main() {
     std::vector<Point3D> points;
-    for (const auto& line : utils::readLinesFromFile("input.txt")) {
+    for (const auto& line : utils::readLinesFromFile(utils::getInputFilePath("inputs/day8.txt"))) {
         long x, y, z;
         if (sscanf(line.c_str(), "%ld,%ld,%ld", &x, &y, &z) == 3) {
             points.emplace_back(x, y, z);

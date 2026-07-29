@@ -2,11 +2,11 @@
 #include <vector>
 #include <print>
 #include <unordered_map>
-#include "utils.h"
+#include "../common/utils.h"
 
 int main() {
     int counter = 0;
-    std::vector<std::string> lines = utils::readLinesFromFile("input.txt");
+    std::vector<std::string> lines = utils::readLinesFromFile(utils::getInputFilePath("inputs/day5.txt"));
     bool foundEmptyLine = false;
     std::unordered_map<size_t, size_t> rangeMap;
     std::vector<std::pair<size_t, size_t>> ranges;

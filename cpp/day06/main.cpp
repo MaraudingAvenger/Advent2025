@@ -3,11 +3,11 @@
 #include <sstream>
 #include <print>
 
-#include "utils.h"
+#include "../common/utils.h"
 
 
 int main() {
-    std::vector<std::string> lines = utils::readLinesFromFile("input.txt");
+    std::vector<std::string> lines = utils::readLinesFromFile(utils::getInputFilePath("inputs/day6.txt"));
     // transpose lines into columns
     std::vector<std::vector<std::string>> problems;
     bool first = true;
@@ -58,7 +58,7 @@ int main() {
     
     size_t total2 = 0;
 
-    std::string fileStr = utils::readFileToString("input.txt");
+    std::string fileStr = utils::readFileToString(utils::getInputFilePath("inputs/day6.txt"));
     lines = utils::splitString(fileStr, "\n");
     std::string opLine = lines.back();
     while (utils::trim(opLine).empty()) {

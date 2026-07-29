@@ -3,7 +3,7 @@
 #include <set>
 #include <map>
 #include <algorithm>
-#include "utils.h"
+#include "../common/utils.h"
 
 
 using Point = std::pair<long, long>;
@@ -280,7 +280,7 @@ size_t solvePart2(const std::vector<Point>& coordinates) {
 int main() {
     // Input format: "x,y" per line.
     std::vector<Point> coordinates;
-    std::ifstream file("input.txt");
+    std::ifstream file(utils::getInputFilePath("inputs/day9.txt"));
     long x, y;
     char comma;
     while (file >> x >> comma >> y) {

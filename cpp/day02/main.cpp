@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "../common/utils.h"
 #include <iostream>
 #include <cmath>
 
@@ -37,7 +37,7 @@ bool isRepeatingPattern(size_t num) {
 
 int main() {
     size_t total = 0;
-    std::string blob = utils::readFileToString("input.txt");
+    std::string blob = utils::readFileToString(utils::getInputFilePath("inputs/day2.txt"));
     
     for (auto& line : utils::splitString(blob, ',')) {
         // line is a numerical range in the format "start-end"

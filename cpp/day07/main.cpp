@@ -5,7 +5,7 @@
 #include <unordered_set>
 #include <unordered_map>
 
-#include "utils.h"
+#include "../common/utils.h"
 
 void printIndices(const std::unordered_map<size_t, size_t>& map) {
     std::cout << "{ ";
@@ -16,7 +16,7 @@ void printIndices(const std::unordered_map<size_t, size_t>& map) {
 }
 
 int main() {
-    std::vector<std::string> lines = utils::readLinesFromFile("input.txt");
+    std::vector<std::string> lines = utils::readLinesFromFile(utils::getInputFilePath("inputs/day7.txt"));
     std::unordered_set<size_t> beamIndices;
     beamIndices.insert(lines.front().find('S', 0));
     size_t splits = 0;

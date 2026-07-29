@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include "utils.h"
+#include "../common/utils.h"
 
 size_t convertToCoords(size_t row, size_t col, size_t lineLen) {
     return row * lineLen + col;
@@ -28,7 +28,7 @@ size_t countSurroundingMarked(const std::vector<unsigned short>& marked, size_t 
 }
 
 int main() {
-    std::vector<std::string> lines = utils::readLinesFromFile("input.txt");
+    std::vector<std::string> lines = utils::readLinesFromFile(utils::getInputFilePath("inputs/day4.txt"));
     size_t lineLen = lines[0].size();
     std::vector<unsigned short> marked(lines.size() * lineLen, 0);
     for (size_t row = 0; row < lines.size(); ++row) {

@@ -1,11 +1,11 @@
-#include "utils.h"
+#include "../common/utils.h"
 #include "http.h"
 
 #include <iostream>
 
 int main() {
 
-    std::vector<std::string> lines = utils::readLinesFromFile("~/dev/advent/2025/inputs/day1.txt");
+    std::vector<std::string> lines = utils::readLinesFromFile(utils::getInputFilePath("inputs/day1.txt"));
     const int size = 100;
     int count = 0;
     int currentPosition = 50;

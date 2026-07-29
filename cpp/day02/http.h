@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utils.h"
+#include "../common/utils.h"
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>

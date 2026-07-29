@@ -8,7 +8,7 @@
 #include <vector>
 #include <queue>
 
-#include "utils.h"
+#include "../common/utils.h"
 
 using uchar = unsigned char;
 using ushort = unsigned short;
@@ -16,7 +16,7 @@ using ushort = unsigned short;
 int main() {
     size_t stepTotal = 0;
     size_t joltageTotal = 0;
-    for (const auto& line : utils::readLinesFromFile("input.txt")) {
+    for (const auto& line : utils::readLinesFromFile(utils::getInputFilePath("inputs/day10.txt"))) {
         // [.#.#] (0,2,3) (1,3) {11,10,11,21}
         // [buttons] (flip patterns) (...) {jolt values}
         std::vector<std::string> parts = utils::splitString(line);

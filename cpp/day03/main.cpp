@@ -1,6 +1,6 @@
 #include <iostream>
 #include <functional>
-#include "utils.h"
+#include "../common/utils.h"
 
 // make every possible combination of numDigits from digits vector, preserving order
 size_t makeNumberFromDigits(const std::vector<size_t>& digits, const int numDigits) {
@@ -29,7 +29,7 @@ size_t makeNumberFromDigits(const std::vector<size_t>& digits, const int numDigi
 }
 
 int main() {
-    std::vector<std::string> lines = utils::readLinesFromFile("input.txt");
+    std::vector<std::string> lines = utils::readLinesFromFile(utils::getInputFilePath("inputs/day3.txt"));
 
     size_t totalCharge = 0;
     // each line represents a bank of batteries with their charge levels
