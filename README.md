@@ -77,6 +77,12 @@ Create the build directory only:
 make build
 ```
 
+Scaffold a new day folder with a main.cpp stub (includes common/utils.h):
+
+```bash
+make new day12
+```
+
 Remove all compiled binaries:
 
 ```bash

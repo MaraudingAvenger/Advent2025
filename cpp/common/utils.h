@@ -90,6 +90,33 @@ std::string trim(const std::string& str, const std::string& chars) {
 	return std::string{sv.substr(first, last - first + 1)};
 }
 
+
+[[nodiscard]] std::string replace(std::string_view str, char from, char to) {
+	std::string result{str};
+	std::ranges::replace(result, from, to);
+	return result;
+}
+
+[[nodiscard]] std::string replace(std::string_view str, std::string_view from, std::string_view to) {
+	if (from.empty()) {
+		return std::string{str};
+	}
+
+	std::string result;
+	result.reserve(str.size());
+	while (true) {
+		const size_t pos = str.find(from);
+		if (pos == std::string_view::npos) {
+			break;
+		}
+		result.append(str.substr(0, pos));
+		result.append(to);
+		str.remove_prefix(pos + from.size());
+	}
+	result.append(str);
+	return result;
+}
+
 std::vector<std::filesystem::path> listFilesInDirectory(const std::filesystem::path& dirPath) {
 	if (!std::filesystem::exists(dirPath) || !std::filesystem::is_directory(dirPath)) {
 		return {};

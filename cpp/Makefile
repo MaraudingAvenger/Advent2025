@@ -4,12 +4,34 @@ LDFLAGS := -lssl -lcrypto # this is not actually used anywhere
 
 DAY_DIRS := $(sort $(shell find . -mindepth 1 -maxdepth 1 -type d -name 'day*' -printf '%f\n'))
 
-.PHONY: all clean build $(DAY_DIRS) day%
+.PHONY: all clean build new $(DAY_DIRS) day%
 
 all: $(DAY_DIRS)
 
 build:
 	@mkdir -p build
+
+# `make new dayNN` creates dayNN/main.cpp with the common utils include.
+# Treat any extra goal (e.g. dayNN) alongside `new` as a no-op target so make
+# doesn't also try to build it via the day% rule below.
+ifneq (,$(filter new,$(MAKECMDGOALS)))
+$(filter-out new,$(MAKECMDGOALS)):
+	@:
+endif
+
+new:
+	@name="$(filter-out new,$(MAKECMDGOALS))"; \
+	if [ -z "$$name" ]; then \
+		echo "Usage: make new dayNN"; \
+		exit 1; \
+	fi; \
+	if [ -d "$$name" ]; then \
+		echo "Error: folder '$$name' already exists."; \
+		exit 1; \
+	fi; \
+	mkdir -p "$$name"; \
+	printf '#include "../common/utils.h"\n\nint main() {\n\n}\n' > "$$name/main.cpp"; \
+	echo "Created $$name/main.cpp"
 
 # Build discovered day* folders for `make all`.
 $(DAY_DIRS): %: build
