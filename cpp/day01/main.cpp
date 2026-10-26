@@ -2,6 +2,7 @@
 #include "http.h"
 
 #include <iostream>
+#include <print>
 
 int main() {
 
@@ -26,7 +27,7 @@ int main() {
             count++;
     }
 
-    std::cout << "Part one: " << count << std::endl;
+    std::println("Part one: {}", count);
 
     count = 0;
     currentPosition = 50;
@@ -51,6 +52,6 @@ int main() {
             throw std::runtime_error("Invalid direction: " + std::string(1, direction));
         }
     }
-    std::cout << "Part two: " << count << std::endl;
+    std::println("Part two: {}", count);
     return 0;
 }

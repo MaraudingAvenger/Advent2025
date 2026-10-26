@@ -2,6 +2,7 @@
 #include <iostream>
 #include <print>
 #include <vector>
+#include <charconv>
 #include "../common/utils.h"
 
 class Point3D {
@@ -63,9 +64,16 @@ void print2d(const std::vector<std::vector<double>>& matrix) {
 int main() {
     std::vector<Point3D> points;
     for (const auto& line : utils::readLinesFromFile(utils::getInputFilePath("inputs/day8.txt"))) {
-        long x, y, z;
-        if (sscanf(line.c_str(), "%ld,%ld,%ld", &x, &y, &z) == 3) {
-            points.emplace_back(x, y, z);
+        long x = 0, y = 0, z = 0;
+        auto comma1 = line.find(',');
+        auto comma2 = line.find(',', comma1 + 1);
+        if (comma1 != std::string::npos && comma2 != std::string::npos) {
+            auto [ptr1, ec1] = std::from_chars(line.data(), line.data() + comma1, x);
+            auto [ptr2, ec2] = std::from_chars(line.data() + comma1 + 1, line.data() + comma2, y);
+            auto [ptr3, ec3] = std::from_chars(line.data() + comma2 + 1, line.data() + line.size(), z);
+            if (ec1 == std::errc{} && ec2 == std::errc{} && ec3 == std::errc{}) {
+                points.emplace_back(x, y, z);
+            }
         }
     }
     // std::cout << "Read " << points.size() << " points." << std::endl;
@@ -140,7 +148,7 @@ int main() {
         }
     }
 
-    std::cout << "Formed " << clusters.size() << " clusters." << std::endl;
+    std::println("Formed {} clusters.", clusters.size());
     // find the biggest 3 clusters
     std::sort(clusters.begin(), clusters.end(),
               [](const std::vector<Point3D>& a, const std::vector<Point3D>& b) {
@@ -159,7 +167,7 @@ int main() {
     for (size_t i = 0; i < 3 && i < clusters.size(); ++i) {
         result *= clusters[i].size();
     }
-    std::cout << "Part 1: " << result << std::endl;
+    std::println("Part 1: {}", result);
 
     // reset clusters and distance matrix
     clusters.clear();
@@ -227,7 +235,7 @@ int main() {
         }
     }
 
-    std::cout << "Part 2: " << points[lastMinI].getX() * points[lastMinJ].getX() << std::endl;
+    std::println("Part 2: {}", points[lastMinI].getX() * points[lastMinJ].getX());
 
     return 0;
 }

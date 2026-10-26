@@ -37,9 +37,44 @@ std::vector<std::string> splitString(const std::string& str, const std::string& 
 	return tokens;
 }
 
+std::vector<std::string> splitString(std::string_view str, const std::string& delimiter) {
+	std::vector<std::string> tokens;
+	size_t start = 0;
+	size_t end = str.find(delimiter);
+	while (end != std::string_view::npos) {
+		tokens.emplace_back(std::string{str.substr(start, end - start)});
+		start = end + delimiter.length();
+		end = str.find(delimiter, start);
+	}
+	tokens.emplace_back(std::string{str.substr(start)});
+	return tokens;
+}
+
+std::vector<std::string> splitString(std::string_view str, char delimiter) {
+	std::vector<std::string> tokens;
+	size_t start = 0;
+	size_t end = str.find(delimiter);
+	while (end != std::string_view::npos) {
+		tokens.emplace_back(std::string{str.substr(start, end - start)});
+		start = end + 1;
+		end = str.find(delimiter, start);
+	}
+	tokens.emplace_back(std::string{str.substr(start)});
+	return tokens;
+}
+
 std::vector<std::string> splitString(const std::string& str) {
 	std::vector<std::string> tokens;
 	std::istringstream iss(str);
+	for (std::string token; iss >> token;) {
+		tokens.push_back(std::move(token));
+	}
+	return tokens;
+}
+
+std::vector<std::string> splitString(std::string_view str) {
+	std::vector<std::string> tokens;
+	std::istringstream iss(std::string{str});
 	for (std::string token; iss >> token;) {
 		tokens.push_back(std::move(token));
 	}

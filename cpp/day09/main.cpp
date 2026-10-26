@@ -3,6 +3,7 @@
 #include <set>
 #include <map>
 #include <algorithm>
+#include <print>
 #include "../common/utils.h"
 
 
@@ -299,13 +300,13 @@ int main() {
             }
         }
     }
-    std::cout << "Part 1: " << maxArea << std::endl;
+    std::println("Part 1: {}", maxArea);
 
     // Part 2: fill polygon induced by vertex order (including closing edge), then
     // find largest inside rectangle whose opposite corners are original vertices.
     maxArea = solvePart2(coordinates);
 
-    std::cout << "Part 2: " << maxArea << std::endl;
+    std::println("Part 2: {}", maxArea);
     
     return 0;
 }

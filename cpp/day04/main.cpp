@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <print>
 #include "../common/utils.h"
 
 size_t convertToCoords(size_t row, size_t col, size_t lineLen) {
@@ -52,7 +53,7 @@ int main() {
         // std::cout << '\t' << lines[row];
         // std::cout << std::endl;
     }
-    std::cout << "Part 1: " << total << std::endl;
+    std::println("Part 1: {}", total);
 
     total = 0;
     size_t lastTotal = 123456789;
@@ -69,6 +70,6 @@ int main() {
             }
         }
     }
-    std::cout << "Part 2: " << total << std::endl;
+    std::println("Part 2: {}", total);
     return 0;
 }

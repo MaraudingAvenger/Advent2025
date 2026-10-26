@@ -4,6 +4,7 @@
 #include <vector>
 #include <unordered_set>
 #include <unordered_map>
+#include <print>
 
 #include "../common/utils.h"
 
@@ -34,7 +35,7 @@ int main() {
         beamIndices = std::move(newBeamIndices);
         newBeamIndices.clear();
     }
-    std::cout << "Part 1: " << splits << std::endl;
+    std::println("Part 1: {}", splits);
 
     std::unordered_map<size_t, size_t> pathCount;
     pathCount[lines.front().find('S', 0)] = 1;
@@ -76,10 +77,10 @@ int main() {
         // }
         // std::cout << std::endl;
     }
-    std::cout << "Part 2: " << std::accumulate(
+    std::println("Part 2: {}", std::accumulate(
         pathCount.begin(), pathCount.end(), 0ULL,
         [](size_t sum, const std::pair<size_t, size_t>& p) {
             return sum + p.second;
-        }) << std::endl;
+        }));
     return 0;
 }

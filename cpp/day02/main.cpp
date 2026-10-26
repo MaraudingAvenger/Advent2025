@@ -1,11 +1,24 @@
 #include "../common/utils.h"
 #include <iostream>
 #include <cmath>
+#include <print>
+#include <charconv>
+
+// Get decimal digit count
+int decimalDigitCount(size_t num) {
+    if (num == 0) return 1;
+    int count = 0;
+    while (num > 0) {
+        num /= 10;
+        ++count;
+    }
+    return count;
+}
 
 // Check if a number is comprised of repeating digit patterns
 // e.g., 11, 111, 1212, 123123123 are patterns, but 1234 is not
 bool isRepeatingPattern(size_t num) {
-    int digitCount = std::floor(std::log10(num)) + 1;
+    int digitCount = decimalDigitCount(num);
     
     // Try all possible pattern lengths that divide evenly into the total length
     for (int patternLen = 1; patternLen <= digitCount / 2; ++patternLen) {
@@ -41,12 +54,12 @@ int main() {
     
     for (auto& line : utils::splitString(blob, ',')) {
         // line is a numerical range in the format "start-end"
-        size_t start, end;
+        size_t start = 0, end = 0;
         sscanf(line.c_str(), "%zu-%zu", &start, &end);
         
         // iterate over numbers with an even number of digits
         for (size_t num = start; num <= end; ++num) {
-            int digitCount = std::floor(std::log10(num)) + 1;
+            int digitCount = decimalDigitCount(num);
             if (digitCount % 2 == 0) {
                 size_t divisor = static_cast<size_t>(std::pow(10, digitCount / 2));
                 size_t firstHalf = num / divisor;
@@ -57,11 +70,11 @@ int main() {
             }
         }
     }
-    std::cout << "Part 1: " << total << std::endl;
+    std::println("Part 1: {}", total);
 
     total = 0;
     for (auto& line : utils::splitString(blob, ',')) {
-        size_t start, end;
+        size_t start = 0, end = 0;
         sscanf(line.c_str(), "%zu-%zu", &start, &end);
 
         for (size_t num = start; num <= end; ++num) {
@@ -70,7 +83,7 @@ int main() {
             }
         }
     }
-    std::cout << "Part 2: " << total << std::endl;
+    std::println("Part 2: {}", total);
 
     return 0;
 }

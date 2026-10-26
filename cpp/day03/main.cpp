@@ -1,5 +1,6 @@
 #include <iostream>
 #include <functional>
+#include <print>
 #include "../common/utils.h"
 
 // make every possible combination of numDigits from digits vector, preserving order
@@ -55,7 +56,7 @@ int main() {
         // std::cout << line << " -> " << lineMax << std::endl;
         totalCharge += lineMax;
     }
-    std::cout << "Part 1: " << totalCharge << std::endl;
+    std::println("Part 1: {}", totalCharge);
 
     totalCharge = 0;
 
@@ -68,6 +69,6 @@ int main() {
         // std::cout << line << " -> " << lineMax << std::endl;
         totalCharge += lineMax;
     }
-    std::cout << "Part 2: " << totalCharge << std::endl;
+    std::println("Part 2: {}", totalCharge);
     return 0;
 }
